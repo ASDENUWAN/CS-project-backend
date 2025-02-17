@@ -30,7 +30,7 @@ $paymentStatus = trim($data['paymentStatus']);
 
 // Prepare SQL statement to insert employee data
 $stmt = $conn->prepare("INSERT INTO payment (paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sisssis", $paymentType, $memberID, $memberName, $paymentDate, $dueDate, $amount, $paymentStatus);
+$stmt->bind_param("sisssds", $paymentType, $memberID, $memberName, $paymentDate, $dueDate, $amount, $paymentStatus);
 
 if ($stmt->execute()) {
     ob_clean(); // Clear any unwanted output
