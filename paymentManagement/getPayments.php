@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 
 try {
     // Query to fetch all payments
-    $sql = "SELECT paymentID, paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus FROM payment";
+    $sql = "SELECT paymentID, paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus FROM payment ORDER BY paymentID DESC";
     $result = $conn->query($sql);
 
     if (!$result) {
