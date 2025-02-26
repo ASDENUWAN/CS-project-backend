@@ -14,13 +14,13 @@ try{
     $sql = "SELECT memberSID, memberID, mpID, mplanName, sDate, eDate, scheduleStatus FROM member_schedule";
     $result = $conn->query($sql);
 
-    $members = [];
+    $schedules = [];
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $schedules[] = $row;
         }
-        echo json_encode(["success" => true, "members" => $schedules]);
+        echo json_encode(["success" => true, "schedules" => $schedules]);
     } else {
         throw new Exception("No schedules found");
     }
