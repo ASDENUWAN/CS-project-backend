@@ -28,18 +28,22 @@ $dueDate = trim($data['dueDate']);
 $amount = trim($data['amount']);
 $paymentStatus = trim($data['paymentStatus']);
 
-// Prepare SQL statement to insert employee data
-$stmt = $conn->prepare("INSERT INTO payment (paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("sisssds", $paymentType, $memberID, $memberName, $paymentDate, $dueDate, $amount, $paymentStatus);
+try {
+    // Prepare SQL statement to insert payment data
+    $stmt = $conn->prepare("INSERT INTO payment (paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sisssds", $paymentType, $memberID, $memberName, $paymentDate, $dueDate, $amount, $paymentStatus);
 
-if ($stmt->execute()) {
-    ob_clean(); // Clear any unwanted output
-    echo json_encode(["success" => true, "message" => "Payment added successfully!"]);
-} else {
+    if ($stmt->execute()) {
+        ob_clean(); // Clear any unwanted output
+        echo json_encode(["success" => true, "message" => "Payment added successfully!"]);
+    } else {
+        throw new Exception("Failed to add payment");
+    }
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Failed to add payment"]);
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+} finally {
+    $stmt->close();
+    $conn->close();
+    exit;
 }
-
-$stmt->close();
-$conn->close();
-exit;
