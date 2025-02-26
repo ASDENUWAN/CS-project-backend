@@ -21,18 +21,23 @@ if (!isset($data["paymentID"])) {
 
 $paymentID = $data["paymentID"];
 
-// Fetch employee details from database
-$stmt = $conn->prepare("SELECT paymentID, paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus FROM payment WHERE paymentID = ?");
-$stmt->bind_param("i", $paymentID);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    // Fetch employee details from database
+    $stmt = $conn->prepare("SELECT paymentID, paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus FROM payment WHERE paymentID = ?");
+    $stmt->bind_param("i", $paymentID);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
-    $payment = $result->fetch_assoc();
-    echo json_encode(["success" => true, "payment" => $payment]);
-} else {
-    echo json_encode(["success" => false, "message" => "Payment not found"]);
+    if ($result->num_rows > 0) {
+        $payment = $result->fetch_assoc();
+        echo json_encode(["success" => true, "payment" => $payment]);
+    } else {
+        throw new Exception("Payment not found");
+    }
+} catch (Exception $e) {
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+} finally {
+    $stmt->close();
+    $conn->close();
+    exit;
 }
-
-$stmt->close();
-$conn->close();
