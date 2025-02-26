@@ -26,7 +26,7 @@ $exercises = $data['exercises']; // Expecting an array of exercises
 $conn->begin_transaction(); // Start transaction
 
 try {
-    // Insert into plan table
+    // Insert into workout_plan table
     $stmt = $conn->prepare("INSERT INTO workout_plan (wpName) VALUES (?)");
     $stmt->bind_param("s", $wpName);
     $stmt->execute();
@@ -34,20 +34,21 @@ try {
     $stmt->close();
 
     // Insert exercises related to this plan
-    $stmt = $conn->prepare("INSERT INTO exercise (wpID, exName, s1, s2, s3, s4) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO exercise (wpID, exName, exType, s1, s2, s3, s4) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
     foreach ($exercises as $exercise) {
-        if (!isset($exercise['exName'], $exercise['s1'], $exercise['s2'], $exercise['s3'], $exercise['s4'])) {
+        if (!isset($exercise['exName'], $exercise['exType'], $exercise['s1'], $exercise['s2'], $exercise['s3'], $exercise['s4'])) {
             throw new Exception("Invalid exercise format");
         }
 
-        $exName = $exercise['exName'];
+        $exName = trim($exercise['exName']);
+        $exType = trim($exercise['exType']); // New field
         $s1 = $exercise['s1'];
         $s2 = $exercise['s2'];
         $s3 = $exercise['s3'];
         $s4 = $exercise['s4'];
 
-        $stmt->bind_param("isiiii", $wpID, $exName, $s1, $s2, $s3, $s4);
+        $stmt->bind_param("issiiii", $wpID, $exName, $exType, $s1, $s2, $s3, $s4);
         $stmt->execute();
     }
 
