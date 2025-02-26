@@ -2,10 +2,10 @@
 header("Content-Type: application/json");
 require '../config.php'; // Database connection file
 
-// Ensure the request method is GET
+// Ensure the request method is POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
-    echo json_encode(["success" => false, "message" => "Only GET requests are allowed"]);
+    echo json_encode(["success" => false, "message" => "Only POST requests are allowed"]);
     exit;
 }
 
@@ -20,7 +20,7 @@ if (!isset($data["dietID"])) {
 }
 
 $dietID =$data["dietID"]; // Convert to integer for security
-
+try{
 // Fetch diet details
 $dietQuery = $conn->prepare("SELECT dietID, dietName, dietType FROM diet WHERE dietID = ?");
 $dietQuery->bind_param("i", $dietID);
@@ -44,16 +44,19 @@ $meals = [];
 while ($row = $mealResult->fetch_assoc()) {
     $meals[] = $row;
 }
-
-// Close connections
-$dietQuery->close();
-$mealQuery->close();
-$conn->close();
-
 // Return response
 echo json_encode([
     "success" => true,
     "diet" => $diet,
     "meals" => $meals
 ]);
+} catch(Exception $e){
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+}finally{
+    // Close connections
+    $dietQuery->close();
+    $mealQuery->close();
+    $conn->close();
+}
+
 ?>
