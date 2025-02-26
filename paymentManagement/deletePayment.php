@@ -17,14 +17,19 @@ if (!isset($data['paymentID'])) {
 }
 
 $paymentID = $data['paymentID'];
-$stmt = $conn->prepare("DELETE FROM payment WHERE paymentID = ?");
-$stmt->bind_param("i", $paymentID);
+try {
+    $stmt = $conn->prepare("DELETE FROM payment WHERE paymentID = ?");
+    $stmt->bind_param("i", $paymentID);
 
-if ($stmt->execute()) {
-    echo json_encode(["success" => true, "message" => "Payment deleted successfully"]);
-} else {
-    echo json_encode(["success" => false, "message" => "Failed to delete payment"]);
+    if ($stmt->execute()) {
+        echo json_encode(["success" => true, "message" => "Payment deleted successfully"]);
+    } else {
+        throw new Exception("Failed to delete payment");
+    }
+} catch (Exception $e) {
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+} finally {
+    $stmt->close();
+    $conn->close();
+    exit;
 }
-
-$stmt->close();
-$conn->close();
