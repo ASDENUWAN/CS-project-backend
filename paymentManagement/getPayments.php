@@ -8,20 +8,29 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     echo json_encode(["success" => false, "message" => "Only GET requests are allowed"]);
     exit;
 }
-// Query to fetch all employees
-$sql = "SELECT paymentID, paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus FROM payment";
-$result = $conn->query($sql);
 
-$payments = [];
+try {
+    // Query to fetch all payments
+    $sql = "SELECT paymentID, paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus FROM payment";
+    $result = $conn->query($sql);
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $payments[] = $row;
+    if (!$result) {
+        throw new Exception("Database query failed: " . $conn->error);
     }
-    echo json_encode(["success" => true, "payments" => $payments]);
-} else {
-    echo json_encode(["success" => false, "message" => "No payments found"]);
-}
 
-$conn->close();
-exit;
+    $payments = [];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $payments[] = $row;
+        }
+        echo json_encode(["success" => true, "payments" => $payments]);
+    } else {
+        throw new Exception("No payments found.");
+    }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+} finally {
+    $conn->close();
+    exit;
+}
