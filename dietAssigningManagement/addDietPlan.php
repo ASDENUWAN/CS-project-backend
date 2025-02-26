@@ -35,18 +35,22 @@ $dpStatus = trim($data['dpStatus']);
 $height = floatval($data['height']);
 $weightKG = floatval($data['weightKG']);
 
-// Prepare SQL statement to insert diet plan data
-$stmt = $conn->prepare("INSERT INTO dietplan (memberID, dietID, startDate, endDate, dpStatus, height, weightKG) VALUES (?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("iisssdd", $memberID, $dietID, $startDate, $endDate, $dpStatus, $height, $weightKG);
+try {
+    // Prepare SQL statement to insert diet plan data
+    $stmt = $conn->prepare("INSERT INTO dietplan (memberID, dietID, startDate, endDate, dpStatus, height, weightKG) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iisssdd", $memberID, $dietID, $startDate, $endDate, $dpStatus, $height, $weightKG);
 
-if ($stmt->execute()) {
-    ob_clean(); // Clear any unwanted output
-    echo json_encode(["success" => true, "message" => "Diet Plan added successfully!"]);
-} else {
+    if ($stmt->execute()) {
+        ob_clean(); // Clear any unwanted output
+        echo json_encode(["success" => true, "message" => "Diet Plan added successfully!"]);
+    } else {
+        throw new Exception("Failed to add diet plan");
+    }
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Failed to add diet plan"]);
+    echo json_encode(["success" => false, "message" => $e->getMessage()]);
+} finally {
+    $stmt->close();
+    $conn->close();
+    exit;
 }
-
-$stmt->close();
-$conn->close();
-exit;
