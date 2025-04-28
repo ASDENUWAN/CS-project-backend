@@ -14,7 +14,7 @@ $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
 // Validate input fields
-if (!isset($data['memName'], $data['mail'], $data['mobile'], $data['age'], $data['address'], $data['gender'], $data['password'])) {
+if (!isset($data['memName'], $data['mail'], $data['mobile'], $data['age'], $data['address'], $data['gender'], $data['password'], $data['memNIC'])) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Invalid input. Please provide all required fields."]);
     exit;
@@ -26,15 +26,16 @@ $mobile = trim($data['mobile']);
 $address = trim($data['address']);
 $gender = trim($data['gender']);
 $age = trim($data['age']);
-$height = (float)$data['height'];
-$weight = (float)$data['weight'];
+$memNIC = trim($data['memNIC']);
+$height = isset($data['height']) ? (float)$data['height'] : 0;
+$weight = isset($data['weight']) ? (float)$data['weight'] : 0;
 $pass = trim($data['password']);
 $password = password_hash($pass, PASSWORD_DEFAULT);
 
 try {
     // Prepare SQL statement to insert member data
-    $stmt = $conn->prepare("INSERT INTO members (memName, mail, age, mobile, address, gender, height, weight, password, regDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->bind_param("ssissssss", $memName, $mail, $age, $mobile, $address, $gender, $height, $weight, $password);
+    $stmt = $conn->prepare("INSERT INTO members (memName, memNIC, mail, age, mobile, address, gender, height, weight, password,regDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->bind_param("sssissssds", $memName, $memNIC, $mail, $age, $mobile, $address, $gender, $height, $weight, $password);
 
     if ($stmt->execute()) {
         ob_clean(); // Clear any unwanted output
