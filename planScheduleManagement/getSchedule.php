@@ -5,7 +5,7 @@ ob_clean();
 // Ensure the request method is GET
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
-    echo json_encode(["success" => false, "message" => "Only GET requests are allowed"]);
+    echo json_encode(["success" => false, "message" => "Only Post requests are allowed"]);
     exit;
 }
 
@@ -21,9 +21,9 @@ if (!isset($data["memberSID"])) {
 
 $memberSID = $data["memberSID"];
 
-try{
+try {
     // Fetch schedule details from database
-    $stmt = $conn->prepare("SELECT memberSID, memberID, mpID, mplanName, sDate, eDate, scheduleStatus FROM member_schedule WHERE memberSID = ?");
+    $stmt = $conn->prepare("SELECT memberSID, memberID, mpID, mplanName,scheduleDuration, sDate, eDate, scheduleStatus FROM member_schedule WHERE memberSID = ?");
     $stmt->bind_param("i", $memberSID);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -34,12 +34,11 @@ try{
     } else {
         throw new Exception("Failed to get schedule");
     }
-} catch(Exception $e){
+} catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
-} finally{
+} finally {
     $stmt->close();
     $conn->close();
     exit;
 }
-
