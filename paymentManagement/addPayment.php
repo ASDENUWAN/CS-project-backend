@@ -14,7 +14,7 @@ $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
 // Validate input fields
-if (!isset($data['paymentType'], $data['memberID'], $data['memberName'], $data['paymentDate'], $data['dueDate'], $data['amount'], $data['paymentStatus'])) {
+if (!isset($data['paymentType'], $data['memberID'], $data['memberName'], $data['paymentDate'], $data['dueDate'], $data['amount'])) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Invalid input. Please provide all required fields."]);
     exit;
@@ -26,24 +26,33 @@ $memberName = trim($data['memberName']);
 $paymentDate = trim($data['paymentDate']);
 $dueDate = trim($data['dueDate']);
 $amount = trim($data['amount']);
-$paymentStatus = trim($data['paymentStatus']);
+$paymentStatus = 'Paid';
 
 try {
-    // Prepare SQL statement to insert payment data
-    $stmt = $conn->prepare("INSERT INTO payment (paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sisssds", $paymentType, $memberID, $memberName, $paymentDate, $dueDate, $amount, $paymentStatus);
+    // Begin transaction
+    $conn->begin_transaction();
 
-    if ($stmt->execute()) {
+    $updateStmt = $conn->prepare("UPDATE payment SET paymentStatus = 'Expired' WHERE memberID = ?");
+    $updateStmt->bind_param("i", $memberID);
+    $updateStmt->execute();
+    $updateStmt->close();
+
+    $insertStmt = $conn->prepare("INSERT INTO payment (paymentType, memberID, memberName, paymentDate, dueDate, amount, paymentStatus) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $insertStmt->bind_param("sisssds", $paymentType, $memberID, $memberName, $paymentDate, $dueDate, $amount, $paymentStatus);
+
+    if ($insertStmt->execute()) {
+        $conn->commit(); // Commit the transaction
         ob_clean(); // Clear any unwanted output
-        echo json_encode(["success" => true, "message" => "Payment added successfully!"]);
+        echo json_encode(["success" => true, "message" => "Schedule added successfully!"]);
     } else {
-        throw new Exception("Failed to add payment");
+        throw new Exception("Failed to add schedule");
     }
 } catch (Exception $e) {
+    $conn->rollback();
     http_response_code(500);
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
 } finally {
-    $stmt->close();
+    if (isset($insertStmt)) $insertStmt->close();
     $conn->close();
     exit;
 }
