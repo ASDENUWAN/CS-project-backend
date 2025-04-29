@@ -43,9 +43,9 @@ try {
     if ($insertStmt->execute()) {
         $conn->commit(); // Commit the transaction
         ob_clean(); // Clear any unwanted output
-        echo json_encode(["success" => true, "message" => "Schedule added successfully!"]);
+        echo json_encode(["success" => true, "message" => "Payment added successfully!"]);
     } else {
-        throw new Exception("Failed to add schedule");
+        throw new Exception("Failed to add payment");
     }
 } catch (Exception $e) {
     $conn->rollback();
