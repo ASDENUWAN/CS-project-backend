@@ -9,9 +9,9 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     exit;
 }
 
-try{
+try {
     // Query to fetch all schedules
-    $sql = "SELECT memberSID, memberID, mpID, mplanName, sDate, eDate, scheduleStatus FROM member_schedule";
+    $sql = "SELECT memberSID, memberID, mpID, mplanName,scheduleDuration, sDate, eDate, scheduleStatus FROM member_schedule";
     $result = $conn->query($sql);
 
     $schedules = [];
@@ -24,10 +24,10 @@ try{
     } else {
         throw new Exception("No schedules found");
     }
-} catch(Exception $e){
+} catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
-} finally{
+} finally {
     $conn->close();
     exit;
 }
