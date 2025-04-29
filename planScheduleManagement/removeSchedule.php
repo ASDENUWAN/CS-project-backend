@@ -16,7 +16,7 @@ if (!isset($data['memberSID'])) {
     exit;
 }
 
-try{
+try {
     // Delete schedules from database
     $memberSID = $data['memberSID'];
     $stmt = $conn->prepare("DELETE FROM member_schedule WHERE memberSID = ?");
@@ -27,12 +27,11 @@ try{
     } else {
         throw new Exception("Failed to delete schedule");
     }
-} catch(Exception $e){
+} catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
-} finally{
+} finally {
     $stmt->close();
     $conn->close();
     exit;
 }
-
